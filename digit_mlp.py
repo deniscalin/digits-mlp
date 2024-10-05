@@ -263,3 +263,13 @@ evaluate()
 # PLOTTING THE TRAIN LOSS
 # plt.plot(torch.tensor(lossi).view(-1, 1000).mean(1))
 
+# SAVING THE MODEL WEIGHTS
+checkpoint_path = 'model_' + str(n_steps) + '.pt'
+
+checkpoint = {
+    "layers": layers,
+    "parameters": parameters,
+    "n_steps": n_steps
+}
+
+torch.save(checkpoint, checkpoint_path)
