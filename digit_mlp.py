@@ -219,37 +219,47 @@ for layer in layers:
         layer.training = False
 
 
-# VALIDATION LOSS EVALS
-out = []
-accs = []
-# batch_size = 32
-runs = 40000
-print(f"Starting the eval with {runs} runs on validation data")
+# VALIDATION LOSS EVAL FUNCTION
+@torch.no_grad()
+def evaluate():
+    out = []
+    accs = []
+    # batch_size = 32
+    runs = 40000
+    print(f"Starting the eval with {runs} runs on validation data")
 
-for i in range(runs):
-    # Contruct the minibatch
-    ix = torch.randint(0, x_val.shape[0], (batch_size,))
-    X_valb, y_valb = x_val[ix], y_val[ix] # batch X and y
-    # Normalize the input
-    X_valb = (X_valb - torch.min(X_valb)) / (torch.max(X_valb) - torch.min(X_valb))
+    for i in range(runs):
+        # Contruct the minibatch
+        ix = torch.randint(0, x_val.shape[0], (batch_size,))
+        X_valb, y_valb = x_val[ix], y_val[ix] # batch X and y
+        # Normalize the input
+        X_valb = (X_valb - torch.min(X_valb)) / (torch.max(X_valb) - torch.min(X_valb))
 
-    # Forward pass 
-    # emb = C[Xb]
-    x = X_valb.view(ix.shape[0], -1)
-    # y_valb = y_valb.squeeze(1)
-    for layer in layers:
-        x = layer(x)
-    # Add some scaling?
-    # x = x / x.shape[1]
-    probs = F.softmax(x, dim=0)
-    ix = torch.multinomial(probs, num_samples=1, replacement=True, generator=g)
-    out.append(ix)
-    # print(out)
-    # print(y_valb)
-    acc = torch.sum(ix == y_valb) / batch_size
-    # print(f"Accuracy: {acc}")
-    accs.append(acc)
-    
-mean_accuracy = sum(accs) / len(accs)
-print(f"Training run config: {n_steps} steps, {lr} final lr")
-print(f"Mean accuracy over {runs} runs: {mean_accuracy}")
+        # Forward pass 
+        # emb = C[Xb]
+        x = X_valb.view(ix.shape[0], -1)
+        # y_valb = y_valb.squeeze(1)
+        for layer in layers:
+            x = layer(x)
+        # Add some scaling?
+        # x = x / x.shape[1]
+        probs = F.softmax(x, dim=0)
+        ix = torch.multinomial(probs, num_samples=1, replacement=True, generator=g)
+        out.append(ix)
+        # print(out)
+        # print(y_valb)
+        acc = torch.sum(ix == y_valb) / batch_size
+        # print(f"Accuracy: {acc}")
+        accs.append(acc)
+        
+    mean_accuracy = sum(accs) / len(accs)
+    print(f"Training run config: {n_steps} steps, {lr} final lr")
+    print(f"Mean accuracy over {runs} runs: {mean_accuracy}")
+
+
+evaluate()
+
+
+# PLOTTING THE TRAIN LOSS
+# plt.plot(torch.tensor(lossi).view(-1, 1000).mean(1))
+
