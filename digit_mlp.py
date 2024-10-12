@@ -186,11 +186,19 @@ elif torch.backends.mps.is_available():
 #           Linear(n_hidden, vocab_size),           BatchNorm1d(vocab_size)
 #          ]
 
+# layers = [
+#             Linear(784, 512),       BatchNorm1d(512), Tanh(),
+#             Linear(512, 256),       BatchNorm1d(256), Tanh(),
+#             Linear(256, 128),       BatchNorm1d(128), Tanh(),
+#             Linear(128, 64),        BatchNorm1d(64),  Tanh(),
+#             Linear(64, vocab_size), BatchNorm1d(vocab_size)
+#         ]
+
 layers = [
-            Linear(784, 512),       BatchNorm1d(512), Tanh(),
-            Linear(512, 256),       BatchNorm1d(256), Tanh(),
-            Linear(256, 128),       BatchNorm1d(128), Tanh(),
-            Linear(128, 64),        BatchNorm1d(64),  Tanh(),
+            Linear(784, 512),       BatchNorm1d(512), ReLU(),
+            Linear(512, 256),       BatchNorm1d(256), ReLU(),
+            Linear(256, 128),       BatchNorm1d(128), ReLU(),
+            Linear(128, 64),        BatchNorm1d(64),  ReLU(),
             Linear(64, vocab_size), BatchNorm1d(vocab_size)
         ]
 
