@@ -8,7 +8,8 @@ import torch
 import torch.nn.functional as F
 import random
 import matplotlib.pyplot as plt
-from utils import display_images
+from utils import display_images, prepare_image
+
 
 train = True
 
@@ -102,7 +103,7 @@ class BatchNorm1d:
     def __init__(self, dim, eps=1e-5, momentum=0.1):
         self.eps = eps
         self.momentum = momentum
-        self.training = True
+        self.training = False
         # Trained parameters
         self.gamma = torch.ones(dim, device=device)
         self.beta = torch.zeros(dim, device=device)
@@ -157,6 +158,8 @@ parameters = loaded_model['parameters']
 
 batch_size = 128
 
+
+# Set BatchNorm layers to inference mode
 for layer in layers:
     if isinstance(layer, BatchNorm1d):
         print(layer)
@@ -210,33 +213,53 @@ def evaluate(runs):
 
 
 @torch.no_grad()
-def inference_function(x_batch, idx):
+def inference_function(x_batch):
+    """The inference function, which takes the input tensor of 1 image, 
+    and returns the label prediction and confidence score for this prediction.
+    
+    Args:
+        x_batch | input torch tensor vector of shape [784]"""
     # Normalize the input
     x_batch = (x_batch - torch.min(x_batch)) / (torch.max(x_batch) - torch.min(x_batch))
-    print("x_batch shape: ", x_batch.shape)
+    # print("x_batch shape: ", x_batch.shape)
     # x_batch = x_batch.view(idx.shape[0], -1)
-    print("x_batch shape after reshape: ", x_batch.shape)
+    # print("x_batch shape after reshape: ", x_batch.shape)
     for layer in layers:
         x_batch = layer(x_batch)
-    print('Logits: ', x_batch)
-    print('Logits shape: ', x_batch.shape)
+    # print('Logits: ', x_batch)
+    # print('Logits shape: ', x_batch.shape)
     probs = F.softmax(x_batch, dim=-1)
-    print('Probabilities: ', probs)
+    # print('Probabilities: ', probs)
     # ix = probs.argmax()
     ix = torch.multinomial(probs, num_samples=1, replacement=True, generator=g)
+    # print("probs shape: ", probs.shape)
+    # print("ix shape: ", ix.shape)
+    # print("ix: ", ix)
+    conf_score = probs[0][ix]
+    # print("conf_score shape: ", conf_score.shape)
+    ix = ix[0][0].item()
+    conf_score = conf_score[0][0].item() * 100 
     # print("Prediction: ", ix)
-    return ix
+    return ix, conf_score
 
 
+img_tensor = prepare_image('test_images/IMG_4940.HEIC')
 # Load an image
 # img_tensor = torch.load('test_images/img.pt')
 # img_tensor = torch.load('test_images/x_train_0.pt')
 # print("Loaded img_tensor: ", img_tensor)
-idx = torch.tensor([1])
-ix = inference_function(x_train[4], idx)
-print ("Prediction: ", ix)
+# idx = torch.tensor([1])
 
-display_images(x_train[4])
+for i in range(50):
+    ix, conf_score  = inference_function(x_val[i])
+    print("Prediction: ", ix)
+    print(f"Confidence score: {conf_score:.2f}%")
+    if ix == y_val[i].item():
+        print("Pass")
+    else:
+        print("Fail")
+
+# display_images(x_val[7])
 
 
 

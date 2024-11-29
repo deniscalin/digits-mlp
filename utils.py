@@ -25,7 +25,7 @@ def resize_image(img, size=(28, 28)):
 def normalize_and_threshold(img):
     img_array = np.asarray(img, dtype=np.float32)
     img_array = img_array / 255.0
-    img_array = np.where(img_array < 0.48, 0, 255)
+    img_array = np.where(img_array < 0.47, 0, 255)
     return img_array
 
 
@@ -41,9 +41,9 @@ def flatten_tensor(img_tensor):
 x_train_0 = torch.load('test_images/x_train_0.pt')
 x_train_0 = x_train_0 / 255.0
 
-def prepare_image():
+def prepare_image(path):
     # Load the local test image and process
-    img = load_and_grayscale('test_images/IMG_4296.HEIC')
+    img = load_and_grayscale(path)
     img = resize_image(img)
     img = invert_image(img)
     img = normalize_and_threshold(img)
