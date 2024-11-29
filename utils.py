@@ -41,28 +41,45 @@ def flatten_tensor(img_tensor):
 x_train_0 = torch.load('test_images/x_train_0.pt')
 x_train_0 = x_train_0 / 255.0
 
-# Load the local test image and process
-img = load_and_grayscale('test_images/IMG_4296.HEIC')
-img = resize_image(img)
-img = invert_image(img)
-img = normalize_and_threshold(img)
+def prepare_image():
+    # Load the local test image and process
+    img = load_and_grayscale('test_images/IMG_4296.HEIC')
+    img = resize_image(img)
+    img = invert_image(img)
+    img = normalize_and_threshold(img)
 
-img_tensor = torch.tensor(img, dtype=torch.float)
-print("Original shape: ", img_tensor.shape)
-img_tensor = flatten_tensor(img_tensor)
-print("After reshaping: ", img_tensor.shape)
-torch.save(img_tensor, 'test_images/img.pt')
+    img_tensor = torch.tensor(img, dtype=torch.float)
+    print("Original shape: ", img_tensor.shape)
+    img_tensor = flatten_tensor(img_tensor)
+    print("After reshaping: ", img_tensor.shape)
+    # torch.save(img_tensor, 'test_images/img.pt')
+    return img_tensor
 
-# Create subplots
-fig, axs = plt.subplots(2, 2)
 
-# Show the images
-axs[0, 0].imshow(x_train_0.reshape((28, 28)), cmap='Greys', interpolation='none')
-axs[0, 1].imshow(img, cmap='Greys', interpolation='none')
-plt.show()
-input = input()
-if input == 'q':
-    import sys; sys.exit(0)
+# Commenting out for testing
+def display_images(img1: torch.tensor, img2 = None):
+    """Display the images
+    
+    Args: 
+        img1 | the first image pixels wrapped in a torch tensor
+        img2 | the second image (optional)
+    """
+    # Create subplots
+    fig, axs = plt.subplots(2, 2)
+
+    # Show the image(s)
+    axs[0, 0].imshow(img1.reshape((28, 28)), cmap='Greys', interpolation='none')
+    if img2:
+        axs[0, 1].imshow(img2, cmap='Greys', interpolation='none')
+    plt.show()
+    input = input()
+    if input == 'q':
+        import sys; sys.exit(0)
+
+
+
+
+
 
 # img = load_and_convert('test_images/IMG_4296.HEIC')
 # img = resize_image(img)
