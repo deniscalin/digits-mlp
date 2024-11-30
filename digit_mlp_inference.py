@@ -229,7 +229,7 @@ def inference_function(x_batch):
     # print('Logits: ', x_batch)
     # print('Logits shape: ', x_batch.shape)
     probs = F.softmax(x_batch, dim=-1)
-    # print('Probabilities: ', probs)
+    print('Probabilities: ', probs)
     # ix = probs.argmax()
     ix = torch.multinomial(probs, num_samples=1, replacement=True, generator=g)
     # print("probs shape: ", probs.shape)
@@ -243,21 +243,37 @@ def inference_function(x_batch):
     return ix, conf_score
 
 
-img_tensor = prepare_image('test_images/IMG_4940.HEIC')
+load_from_set = False
+if load_from_set:
+    id_from_val_set = 10
+    x_load_target = x_val[id_from_val_set]
+    y_load_target = y_val[id_from_val_set]
+    print("Label: ", y_load_target)
+else:
+    img_tensor = prepare_image('test_images/digit.png')
+    x_load_target = img_tensor
+
+
+ix, conf_score  = inference_function(x_load_target)
+print("Prediction: ", ix)
+print(f"Confidence score: {conf_score:.2f}%")
+display_images(x_load_target)
 # Load an image
 # img_tensor = torch.load('test_images/img.pt')
 # img_tensor = torch.load('test_images/x_train_0.pt')
 # print("Loaded img_tensor: ", img_tensor)
 # idx = torch.tensor([1])
 
-for i in range(50):
-    ix, conf_score  = inference_function(x_val[i])
-    print("Prediction: ", ix)
-    print(f"Confidence score: {conf_score:.2f}%")
-    if ix == y_val[i].item():
-        print("Pass")
-    else:
-        print("Fail")
+
+# Testing on the val set
+# for i in range(50):
+#     ix, conf_score  = inference_function(x_val[i])
+#     print("Prediction: ", ix)
+#     print(f"Confidence score: {conf_score:.2f}%")
+#     if ix == y_val[i].item():
+#         print("Pass")
+#     else:
+#         print("Fail")
 
 # display_images(x_val[7])
 

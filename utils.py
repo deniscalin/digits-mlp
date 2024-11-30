@@ -1,5 +1,5 @@
 import PIL
-from PIL import Image
+from PIL import Image, ImageFilter
 import PIL.ImageOps as ops
 from pillow_heif import register_heif_opener
 import numpy as np
@@ -23,9 +23,11 @@ def resize_image(img, size=(28, 28)):
 
 
 def normalize_and_threshold(img):
-    img_array = np.asarray(img, dtype=np.float32)
+    img_array = img_to_array(img)
     img_array = img_array / 255.0
-    img_array = np.where(img_array < 0.47, 0, 255)
+    print("PRINT FROM UTILS.N_AND_T. img_array: ", img_array)
+    img_array = np.where(img_array < 0.05, 0, 255)
+    img_array = np.asarray(img_array, dtype=np.uint8)
     return img_array
 
 
@@ -35,6 +37,18 @@ def invert_image(img):
 
 def flatten_tensor(img_tensor):
     return img_tensor.reshape((784))
+
+
+def add_blur(img):
+    return img.filter(ImageFilter.GaussianBlur(radius=0.85))
+
+
+def array_to_img(img):
+    return Image.fromarray(img)
+
+
+def img_to_array(img):
+    return np.asarray(img, dtype=np.float32)
 
 
 # Load a sample x_train vector and normalize
@@ -47,6 +61,10 @@ def prepare_image(path):
     img = resize_image(img)
     img = invert_image(img)
     img = normalize_and_threshold(img)
+    img = array_to_img(img)
+    img = add_blur(img)
+    img = img_to_array(img)
+    
 
     img_tensor = torch.tensor(img, dtype=torch.float)
     print("Original shape: ", img_tensor.shape)
