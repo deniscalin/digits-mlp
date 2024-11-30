@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from utils import display_images, prepare_image
 
 
-train = True
+train = False
 
 # CONFIGURE THE DEVICE
 if train:
@@ -76,6 +76,8 @@ if train:
     for i in range(x_val.shape[0]):
         x_val[i] = x_val[i].reshape((28, 28)).T.reshape((784))
 
+    # Set training batch size
+    batch_size = 128
 
     # np.save('x_train_0.npy', x_train[0])
     # torch.save(x_train[0], 'test_images/x_train_0.pt')
@@ -129,7 +131,7 @@ class BatchNorm1d:
         return self.out
     
     def parameters(self):
-        return [self.gamma, self.beta]
+        return [self.gamma, self.beta, self.running_mean, self.running_var]
     
     
 class Tanh:
@@ -155,8 +157,14 @@ class ReLU:
 loaded_model = torch.load('model_300000.pt')
 layers = loaded_model['layers']
 parameters = loaded_model['parameters']
+# print("Printing loaded params: ", parameters)
+# print("-------")
 
-batch_size = 128
+
+# params = [p for layer in layers for p in layer.parameters()]
+# print("Printing new parameter shapes: ", [p.shape for p in params])
+# params_obj = {'params': params}
+# torch.save(params_obj, 'model_300k_params.pt')
 
 
 # Set BatchNorm layers to inference mode
