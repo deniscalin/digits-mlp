@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from utils import display_images, prepare_image
 
 
-work_with_dataset = True
+work_with_dataset = False
 
 # CONFIGURE THE DEVICE
 if work_with_dataset:
@@ -277,13 +277,14 @@ if work_with_dataset:
     print("Label: ", y_load_target)
 else:
     img_tensor = prepare_image('test_images/digit.png')
-    x_load_target = img_tensor
+    x_load_target_0 = img_tensor
 
 
 ix, conf_score  = inference_function(x_load_target_0)
 print("Prediction: ", ix)
 print(f"Confidence score: {conf_score:.2f}%")
-display_images(x_load_target_0, x_load_target_1, x_load_target_2, x_load_target_3)
+display_images(x_load_target_0)
+# display_images(x_load_target_0, x_load_target_1, x_load_target_2, x_load_target_3)
 # Load an image
 # img_tensor = torch.load('test_images/img.pt')
 # img_tensor = torch.load('test_images/x_train_0.pt')
