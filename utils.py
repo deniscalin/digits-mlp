@@ -18,7 +18,8 @@ def load_and_grayscale(image_path: str):
 
 
 def resize_image(img, size=(28, 28)):
-    img = img.resize(size, Image.LANCZOS)
+    img.thumbnail(size=size, resample=Image.Resampling.LANCZOS)
+    img = img.resize(size, Image.Resampling.LANCZOS)
     return img
 
 
@@ -58,6 +59,10 @@ def prepare_image(path):
     # Load the local test image and process
     img = load_and_grayscale(path)
     img = resize_image(img)
+    # img.show("Image after resizing")
+    # input = input()
+    # if input == 'q':
+    #     import sys; sys.exit(0)
     img = invert_image(img)
     img = normalize_and_threshold(img)
     img = array_to_img(img)

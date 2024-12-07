@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from utils import display_images, prepare_image
 
 
-train = False
+train = True
 
 # CONFIGURE THE DEVICE
 if train:
@@ -251,9 +251,20 @@ def inference_function(x_batch):
     return ix, conf_score
 
 
-load_from_set = False
+def search_for_number(search_term, dataset):
+    search_term = torch.tensor([search_term])
+    print("Search term: ", search_term)
+    for id, label in enumerate(dataset):
+        print(f"Id: {id}, Label: {label}")
+        if label == search_term:
+            print(f"First occurance of {search_term} in {dataset} at position: ", id)
+            return id
+
+
+load_from_set = True
 if load_from_set:
-    id_from_val_set = 10
+    number_from_val_set = 4
+    id_from_val_set = search_for_number(number_from_val_set, y_val)
     x_load_target = x_val[id_from_val_set]
     y_load_target = y_val[id_from_val_set]
     print("Label: ", y_load_target)
