@@ -8,7 +8,7 @@ import torch
 import torch.nn.functional as F
 import random
 import matplotlib.pyplot as plt
-from utils import display_images, prepare_image
+from utils import display_images, prepare_image, process_image
 
 
 train = False
@@ -258,7 +258,8 @@ if load_from_set:
     y_load_target = y_val[id_from_val_set]
     print("Label: ", y_load_target)
 else:
-    img_tensor = prepare_image('test_images/digit.png')
+    # img_tensor = prepare_image('test_images/digit.png')
+    img_tensor = process_image('test_images/digit.png')
     x_load_target = img_tensor
 
 

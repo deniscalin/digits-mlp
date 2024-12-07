@@ -2,6 +2,7 @@ import PIL
 from PIL import Image, ImageFilter
 import PIL.ImageOps as ops
 import cv2
+import imutils
 from pillow_heif import register_heif_opener
 import numpy as np
 import torch
@@ -20,15 +21,67 @@ def load_and_grayscale(image_path: str):
     return img
 
 
+def threshold(img):
+    _, thresh = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    return thresh
+
+
+def find_contours(img):
+    contours, hierarchy = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    print("Hierarchy: ", hierarchy)
+    img_inverted_back = cv2.bitwise_not(img)
+    if contours:
+        # Combine contours into one
+        comb_cont = np.vstack(contours)
+
+        # Get bounding box
+        x, y, w, h = cv2.boundingRect(comb_cont)
+
+        # Calculate center of bounding box
+        box_center_x = x + w // 2
+        box_center_y = y + h // 2
+
+        # Calculate center of image
+        img_center_x = img_inverted_back.shape[1] // 2
+        img_center_y = img_inverted_back.shape[0] // 2
+
+        # Calculate translation amounts
+        t_x = img_center_x - box_center_x
+        t_y = img_center_y - box_center_y
+
+        # Create translation matrix
+        trans_matrix = np.float32([[1, 0, t_x], [0, 1, t_y]])
+
+        # Get image dimensions
+        img_height, img_width = img_inverted_back.shape[:2]
+
+        # Apply translations to the img
+        cent_img = cv2.warpAffine(img_inverted_back, trans_matrix, (img_width, img_height))
+
+        # Draw bounding box on original and centered images
+        cv2.rectangle(img_inverted_back, (x, y), (x + w, y + h), (0, 0, 0), 2)
+        cv2.rectangle(cent_img, (x + t_x, y + t_y), (x + t_x + w, y + t_y + h), (0, 0, 0), 2)
+        # cv2.drawContours(img_contours, contours, -1, (0, 0, 0), 1)
+        cv2.imshow("Original img ", img_inverted_back)
+        cv2.imshow("Centered img ", cent_img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+
 def center_image(img):
     contours, hierarchy = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     print(contours)
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        print("Box: ({x}, {y}, {w}, {h})")
+        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
+    cv2.imshow("The img with bounding boxes: ", img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 def resize_image(img, size=(28, 28)):
-    img = img.resize(size, Image.LANCZOS)
-    # img = img.thumbnail(size)
-    # img = ops.contain(img, size=size, method=Image.LANCZOS)
+    img = cv2.resize(img, size)
     return img
 
 
@@ -64,6 +117,20 @@ def img_to_array(img):
 # Load a sample x_train vector and normalize
 x_train_0 = torch.load('test_images/x_train_0.pt')
 x_train_0 = x_train_0 / 255.0
+
+
+def process_image(path):
+    img = load_and_grayscale(path)
+    img = threshold(img)
+    img = cv2.bitwise_not(img)
+    resized_image = resize_image(img)
+    cv2.namedWindow("Resized Image: ")
+    cv2.resizeWindow("Resized Image: ", 500, 500)
+    cv2.imshow("Resized Image: ", resized_image)
+    # cv2.imshow("Original Image: ", img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
 
 def prepare_image(path):
     # Load the local test image and process
