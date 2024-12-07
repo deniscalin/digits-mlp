@@ -1,6 +1,7 @@
 import PIL
 from PIL import Image, ImageFilter
 import PIL.ImageOps as ops
+import cv2
 from pillow_heif import register_heif_opener
 import numpy as np
 import torch
@@ -11,14 +12,23 @@ from matplotlib import pyplot as plt
 # Register HEIF opener to work with the HEIC format
 register_heif_opener()
 
+
 # Helper functions
 def load_and_grayscale(image_path: str):
-    img = Image.open(image_path).convert('L')
+    img = cv2.imread(image_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     return img
+
+
+def center_image(img):
+    contours, hierarchy = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    print(contours)
 
 
 def resize_image(img, size=(28, 28)):
     img = img.resize(size, Image.LANCZOS)
+    # img = img.thumbnail(size)
+    # img = ops.contain(img, size=size, method=Image.LANCZOS)
     return img
 
 
@@ -26,7 +36,7 @@ def normalize_and_threshold(img):
     img_array = img_to_array(img)
     img_array = img_array / 255.0
     # print("PRINT FROM UTILS.N_AND_T. img_array: ", img_array)
-    img_array = np.where(img_array < 0.05, 0, 255)
+    img_array = np.where(img_array < 0.2, 0, 255)
     img_array = np.asarray(img_array, dtype=np.uint8)
     return img_array
 
@@ -40,7 +50,7 @@ def flatten_tensor(img_tensor):
 
 
 def add_blur(img):
-    return img.filter(ImageFilter.GaussianBlur(radius=0.85))
+    return img.filter(ImageFilter.GaussianBlur(radius=0.75))
 
 
 def array_to_img(img):
@@ -58,6 +68,7 @@ x_train_0 = x_train_0 / 255.0
 def prepare_image(path):
     # Load the local test image and process
     img = load_and_grayscale(path)
+    center_image(img)
     img = resize_image(img)
     img = invert_image(img)
     img = normalize_and_threshold(img)
@@ -74,7 +85,6 @@ def prepare_image(path):
     return img_tensor
 
 
-# Commenting out for testing
 def display_images(img1: torch.tensor, img2 = None):
     """Display the images
     
