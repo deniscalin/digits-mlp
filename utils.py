@@ -26,7 +26,7 @@ def normalize_and_threshold(img):
     img_array = img_to_array(img)
     img_array = img_array / 255.0
     # print("PRINT FROM UTILS.N_AND_T. img_array: ", img_array)
-    img_array = np.where(img_array < 0.05, 0, 255)
+    img_array = np.where(img_array < 0.2, 0, 255)
     img_array = np.asarray(img_array, dtype=np.uint8)
     return img_array
 
@@ -40,8 +40,7 @@ def flatten_tensor(img_tensor):
 
 
 def add_blur(img):
-    return img.filter(ImageFilter.GaussianBlur(radius=0.85))
-
+    return img.filter(ImageFilter.GaussianBlur(radius=0.70))
 
 def array_to_img(img):
     return Image.fromarray(img)
