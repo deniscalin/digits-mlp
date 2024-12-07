@@ -11,10 +11,10 @@ import matplotlib.pyplot as plt
 from utils import display_images, prepare_image
 
 
-train = True
+work_with_dataset = True
 
 # CONFIGURE THE DEVICE
-if train:
+if work_with_dataset:
     device = 'cpu'
     if torch.cuda.is_available():
         device = 'cuda'
@@ -33,7 +33,7 @@ print(f"Setting the RNG seed to {global_seed}")
 g = torch.manual_seed(global_seed)
 
 # READ IN THE DATA
-if train:
+if work_with_dataset:
     train_data = pd.read_csv('emnist-digits-train.csv')
     val_data = pd.read_csv('emnist-digits-test.csv')
 
@@ -251,32 +251,39 @@ def inference_function(x_batch):
     return ix, conf_score
 
 
-def search_for_number(search_term, dataset):
+def search_for_number(search_term, dataset, number_of_items):
     search_term = torch.tensor([search_term])
+    out = []
     print("Search term: ", search_term)
     for id, label in enumerate(dataset):
-        print(f"Id: {id}, Label: {label}")
         if label == search_term:
-            print(f"First occurance of {search_term} in {dataset} at position: ", id)
-            return id
+            print(f"First occurance of {search_term} at position: ", id)
+            out.append(id)
+        if len(out) == number_of_items:
+            return out
+    return out
 
 
-load_from_set = True
-if load_from_set:
-    number_from_val_set = 4
-    id_from_val_set = search_for_number(number_from_val_set, y_val)
-    x_load_target = x_val[id_from_val_set]
-    y_load_target = y_val[id_from_val_set]
+# load_from_set = True
+if work_with_dataset:
+    number_from_val_set = 5
+    number_of_items = 10
+    list_of_ids = search_for_number(number_from_val_set, y_val, number_of_items)
+    x_load_target_0 = x_val[list_of_ids[4]]
+    x_load_target_1 = x_val[list_of_ids[5]]
+    x_load_target_2 = x_val[list_of_ids[6]]
+    x_load_target_3 = x_val[list_of_ids[7]]
+    y_load_target = y_val[list_of_ids[0]]
     print("Label: ", y_load_target)
 else:
     img_tensor = prepare_image('test_images/digit.png')
     x_load_target = img_tensor
 
 
-ix, conf_score  = inference_function(x_load_target)
+ix, conf_score  = inference_function(x_load_target_0)
 print("Prediction: ", ix)
 print(f"Confidence score: {conf_score:.2f}%")
-display_images(x_load_target)
+display_images(x_load_target_0, x_load_target_1, x_load_target_2, x_load_target_3)
 # Load an image
 # img_tensor = torch.load('test_images/img.pt')
 # img_tensor = torch.load('test_images/x_train_0.pt')

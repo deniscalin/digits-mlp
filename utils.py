@@ -1,3 +1,4 @@
+import cv2
 import PIL
 from PIL import Image, ImageFilter
 import PIL.ImageOps as ops
@@ -10,6 +11,53 @@ from matplotlib import pyplot as plt
 
 # Register HEIF opener to work with the HEIC format
 register_heif_opener()
+
+
+def process_image(path, target_size=(28, 28)):
+    # Load the image
+    img = cv2.imread(path)
+    if img is None:
+        print(f"Error: Could not read image at {path}")
+        return None
+    
+    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    h, w = gray_img.shape
+    aspect_ratio = float(w) / h
+    print(f"INSIDE PROCESSING. height: {h}, width: {w}, aspect ratio: {aspect_ratio}")
+
+    # Calculate new dimensions while keeping aspect ratio
+    if aspect_ratio > 1: # wider than tall
+        new_w = target_size[1]
+        new_h = int(new_w / aspect_ratio)
+    else: # taller than wide or square
+        new_h = target_size[0]
+        new_w = int(new_h * aspect_ratio)
+
+    # Resize the image
+    resized_img = cv2.resize(gray_img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+
+    # Create a blank canvas for padding
+    canvas = np.zeros(target_size, dtype=np.uint8)
+
+    # Calculate padding to center resized image
+    pad_h = (target_size[0] - new_h) // 2
+    pad_w = (target_size[1] - new_w) // 2
+
+    # Place the image onto the canvas with padding
+    canvas[pad_h:pad_h + new_h, pad_w:pad_w + new_w] = resized_img
+
+    # Apply Gaussian Blur
+    blurred_img = cv2.GaussianBlur(canvas, (5, 5), 0)
+
+    # Apply thresholding for better contrast
+    _, thresh_img = cv2.threshold(blurred_img, 127, 255, cv2.THRESH_BINARY_INV)
+
+    cv2.imshow("Thresholded image: ", thresh_img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
 
 # Helper functions
 def load_and_grayscale(image_path: str):
@@ -79,7 +127,7 @@ def prepare_image(path):
 
 
 # Commenting out for testing
-def display_images(img1: torch.tensor, img2 = None):
+def display_images(img1: torch.tensor, img2 = None, img3 = None, img4 = None):
     """Display the images
     
     Args: 
@@ -91,8 +139,12 @@ def display_images(img1: torch.tensor, img2 = None):
 
     # Show the image(s)
     axs[0, 0].imshow(img1.reshape((28, 28)), cmap='Greys', interpolation='none')
-    if img2:
-        axs[0, 1].imshow(img2, cmap='Greys', interpolation='none')
+    if img2 != None:
+        axs[0, 1].imshow(img2.reshape((28, 28)), cmap='Greys', interpolation='none')
+    if img3 != None:
+        axs[1, 0].imshow(img3.reshape((28, 28)), cmap='Greys', interpolation='none')
+    if img4 != None:
+        axs[1, 1].imshow(img4.reshape((28, 28)), cmap='Greys', interpolation='none')  
     plt.show()
     input = input()
     if input == 'q':
